@@ -1,1 +1,1 @@
-# Comp_Gr-fica_TP
+# Comp_Gráfica_TP
