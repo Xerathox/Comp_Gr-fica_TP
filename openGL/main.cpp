@@ -39,7 +39,7 @@ int main() {
 		glfwTerminate();
 		return -1;
 	}
-	glfwMakeContextCurrent(ventana);
+	glfwMakeContextCurrent(ventana); 
 	glfwSetFramebufferSizeCallback(ventana, framebuffer_tamanho_callback);
 
 	//Cargar Glad
@@ -48,13 +48,15 @@ int main() {
 		return -1;
 	}
 
-	CProgramaShaders programa_shaders = CProgramaShaders("GLSL/codigo.vs", "GLSL/codigo.fs");
-
 	//Definiendo la geometría de la figura en función de vértices
 	Superficie modelo;
 	readOFF("OFF/avion.off", &modelo);
-	//readOFF("OFF/cuadrado.off", &modelo);
-	
+	cout << modelo.tipo << endl;
+
+	string ruta = "GLSL/codigo.vs";
+	if (modelo.tipo == "3DC") ruta = "GLSL/codigoColor.vs";
+	CProgramaShaders programa_shaders = CProgramaShaders(ruta, "GLSL/codigo.fs");
+
 	//Enviando la geometría al GPU: Definiendo los buffers (Vertex Array Objects y Vertex Buffer Objects)
 	unsigned int id_array_vertices, id_array_buffers, id_element_buffer;
 	glGenVertexArrays(1, &id_array_vertices);
@@ -69,7 +71,7 @@ int main() {
 	glBindBuffer(GL_ARRAY_BUFFER, id_array_buffers);
 	glBufferData(GL_ARRAY_BUFFER, modelo.verticesTotal * sizeof(GLfloat), modelo.vertices, GL_STATIC_DRAW);
 	//indices
-	if (modelo.tipo != "2D") {
+	if (modelo.tipo == "3D") {
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_element_buffer);
 		glBufferData(GL_ELEMENT_ARRAY_BUFFER, modelo.indicesTotal * sizeof(GLuint), modelo.indices, GL_STATIC_DRAW);
 	}
@@ -80,7 +82,7 @@ int main() {
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(GLfloat), (void*)0);
 		glEnableVertexAttribArray(0);
 	}
-	else if (modelo.tipo == "3DC") {
+	if (modelo.tipo == "3DC") {
 		//Atributo de posicion
 		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)0);
 		glEnableVertexAttribArray(0);
@@ -88,7 +90,7 @@ int main() {
 		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (void*)(3 * sizeof(float)));
 		glEnableVertexAttribArray(1);
 	}
-	else if (modelo.tipo == "3DT") {
+	if (modelo.tipo == "3DT") {
 		//añadir texturas
 		return -1;
 	}
@@ -110,14 +112,16 @@ int main() {
 		programa_shaders.usar();
 		glm::mat4 transformacion = glm::mat4(1.0);
 		transformacion = glm::translate(transformacion, glm::vec3(0.0, 0.0, 0.0));
-		transformacion = glm::scale(transformacion, glm::vec3(0.1, 0.1, 0.1));
+		transformacion = glm::scale(transformacion, glm::vec3(0.125, 0.125, 0.125));
 		transformacion = glm::rotate(transformacion, theTime, glm::vec3(0.0, 0.5, 0.0));
 		programa_shaders.setMat4("transformacion", transformacion);
-		programa_shaders.setVec3("colores", glm::vec3(0.1, 0.2, 0.3));
+		if (modelo.tipo != "3DC" && modelo.tipo != "3DT") {
+			programa_shaders.setVec3("colores", glm::vec3(0.1, 0.2, 0.3));
+		}
 		
 		glBindVertexArray(id_array_vertices);
 		glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_element_buffer);
-		if (modelo.tipo == "2D") {
+		if (modelo.tipo == "2D" || modelo.tipo == "3DC") {
 			glDrawArrays(GL_TRIANGLES, 0, modelo.verticesTotal);
 		}
 		else {
