@@ -16,7 +16,7 @@ class CProgramaShaders {
 	GLuint idPrograma;
 public:
 	CProgramaShaders(string rutaShaderVertice, string rutaShaderFragmento) {
-		//Variables para leer los archivos de c骴igo
+		//Variables para leer los archivos de c贸digo
 		string strCodigoShaderVertice;
 		string strCodigoShaderFragmento;
 		ifstream pArchivoShaderVertice;
@@ -25,17 +25,17 @@ public:
 		pArchivoShaderVertice.exceptions(ifstream::failbit | ifstream::badbit);
 		pArchivoShaderFragmento.exceptions(ifstream::failbit | ifstream::badbit);
 		try {
-			//Abriendo los archivos de c骴igo de los shader
+			//Abriendo los archivos de c贸digo de los shader
 			pArchivoShaderVertice.open(rutaShaderVertice);
 			pArchivoShaderFragmento.open(rutaShaderFragmento);
-			//Leyendo la informaci髇 de los archivos
+			//Leyendo la informaci贸n de los archivos
 			stringstream lectorShaderVertice, lectorShaderFragmento;
 			lectorShaderVertice << pArchivoShaderVertice.rdbuf();
 			lectorShaderFragmento << pArchivoShaderFragmento.rdbuf();
 			//Cerrando los archivos
 			pArchivoShaderVertice.close();
 			pArchivoShaderFragmento.close();
-			//Pasando la informaci髇 leida a string
+			//Pasando la informaci贸n leida a string
 			strCodigoShaderVertice = lectorShaderVertice.str();
 			strCodigoShaderFragmento = lectorShaderFragmento.str();
 		}
@@ -44,13 +44,13 @@ public:
 		}
 		const char* codigoShaderVertice = strCodigoShaderVertice.c_str();
 		const char* codigoShaderFragmento = strCodigoShaderFragmento.c_str();
-		//Asociando y compilando los c骴igos de los shader
+		//Asociando y compilando los c贸digos de los shader
 		GLuint idShaderVertice, idShaderFragmento;
-		//Shader de V閞tice
+		//Shader de V茅rtice
 		idShaderVertice = glCreateShader(GL_VERTEX_SHADER);
 		glShaderSource(idShaderVertice, 1, &codigoShaderVertice, NULL);
 		glCompileShader(idShaderVertice);
-		verificarErrores(idShaderVertice, "V閞tice");
+		verificarErrores(idShaderVertice, "V茅rtice");
 		//Shader de Fragmento
 		idShaderFragmento = glCreateShader(GL_FRAGMENT_SHADER);
 		glShaderSource(idShaderFragmento, 1, &codigoShaderFragmento, NULL);
@@ -95,7 +95,7 @@ private:
 			glGetShaderiv(identificador, GL_COMPILE_STATUS, &ok);
 			if (!ok) {
 				glGetShaderInfoLog(identificador, 1024, nullptr, log);
-				cout << "Error de compilaci髇 con el Shader de " << tipo << ": " << log << "\n";
+				cout << "Error de compilaci贸n con el Shader de " << tipo << ": " << log << "\n";
 			}
 		}
 	}
@@ -112,7 +112,7 @@ typedef struct Superficie {
 void readOFF(string ruta, Superficie* M) {
 	ifstream file(ruta);
 	string line;
-
+	bool first = true;
 	int numVertices, numCaras, numAristas;
 	float a, b, c, d, e, f, g, h;
 
@@ -120,31 +120,27 @@ void readOFF(string ruta, Superficie* M) {
 		getline(file, line); // OFF
 		file >> numVertices >> numCaras >> numAristas;
 
-		M->verticesTotal = numVertices * 3;
-		M->vertices = new float[M->verticesTotal];
-
-		bool identified = false;
-
-		for(int i = 0; i < numVertices; i++) {
-			if (!identified) {
-				string line1;
-				getline(file, line1);
-				stringstream ss(line1);
+		for (int i = 0; i < numVertices; i++) {
+			if (first) {
+				file.ignore(); // dummy
+				getline(file, line);
+				stringstream ss(line);
 
 				vector<float> auxVec;
 				float auxFloat;
-				while (ss >> auxFloat){
+				while (ss >> auxFloat) {
 					auxVec.push_back(auxFloat);
-					cout << auxFloat << endl;
 				}
 
 				if (auxVec.size() == 3) M->tipo = "3D";
 				if (auxVec.size() == 6) M->tipo = "3DC";
 				if (auxVec.size() == 8) M->tipo = "3DT";
 
-				for(int j = 0; j < auxVec.size(); j++) M->vertices[j] = auxVec[j];
+				M->verticesTotal = numVertices * auxVec.size();
+				M->vertices = new float[M->verticesTotal];
+				for (int j = 0; j < auxVec.size(); j++) M->vertices[j] = auxVec[j];
 
-				identified = true;
+				first = false;
 			}
 			else {
 				if (M->tipo == "3D") {
@@ -192,48 +188,5 @@ void readOFF(string ruta, Superficie* M) {
 			}
 		}
 	}
-
-	file.close();
-}
-	ifstream file(ruta);
-	string line;
-
-	int numVertices, numCaras, numAristas;
-	float a, b, c;
-
-	if (file.is_open()) {
-		getline(file, line); // OFF
-		file >> numVertices >> numCaras >> numAristas;
-
-		if (numCaras == 0) {
-			M->tipo = "2D";
-		}
-		else { //cambiar
-			M->tipo = "3D";
-		}
-
-		M->verticesTotal = numVertices * 3;
-		M->vertices = new GLfloat[M->verticesTotal];
-
-		for (int i = 0; i < numVertices; i++) {
-			file >> a >> b >> c;
-			M->vertices[3 * i] = a;
-			M->vertices[3 * i + 1] = b;
-			M->vertices[3 * i + 2] = c;
-		}
-
-		if (M->tipo == "3D") {
-			M->indicesTotal = numCaras * 3;
-			M->indices = new GLuint[M->indicesTotal];
-
-			for (int i = 0; i < numCaras; i++) {
-				file >> a >> a >> b >> c;
-				M->indices[3 * i] = a;
-				M->indices[3 * i + 1] = b;
-				M->indices[3 * i + 2] = c;
-			}
-		}
-	}
-
 	file.close();
 }
