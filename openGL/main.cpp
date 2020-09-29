@@ -9,6 +9,7 @@
 #include <algorithm>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include "shaderClass.h"
 #include "fileReader.h"
 
 
@@ -53,9 +54,13 @@ int main() {
 	readOFF("OFF/avion.off", &modelo);
 	cout << modelo.tipo << endl;
 
-	string ruta = "GLSL/codigo.vs";
-	if (modelo.tipo == "3DC") ruta = "GLSL/codigoColor.vs";
-	CProgramaShaders programa_shaders = CProgramaShaders(ruta, "GLSL/codigo.fs");
+	string vertexShader = "GLSL/codigo.vs", fragmentShader = "GLSL/codigo.fs";
+	if (modelo.tipo == "3DC") vertexShader = "GLSL/codigoColor.vs";
+	if (modelo.tipo == "3DT") {
+		vertexShader = "GLSL/codigoTextura.vs";
+		fragmentShader = "GLSL/codigoTextura.fs";
+	}
+	CProgramaShaders programa_shaders = CProgramaShaders(vertexShader, fragmentShader);
 
 	//Enviando la geometría al GPU: Definiendo los buffers (Vertex Array Objects y Vertex Buffer Objects)
 	unsigned int id_array_vertices, id_array_buffers, id_element_buffer;
@@ -91,8 +96,15 @@ int main() {
 		glEnableVertexAttribArray(1);
 	}
 	if (modelo.tipo == "3DT") {
-		//añadir texturas
-		return -1;
+		//Atributo de posicion
+		glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)0);
+		glEnableVertexAttribArray(0);
+		//Atributo de color
+		glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(3 * sizeof(float)));
+		glEnableVertexAttribArray(1);
+		//Atributo de textura
+		glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(GLfloat), (void*)(6 * sizeof(float)));
+		glEnableVertexAttribArray(2);
 	}
 
 	glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -113,10 +125,10 @@ int main() {
 		glm::mat4 transformacion = glm::mat4(1.0);
 		transformacion = glm::translate(transformacion, glm::vec3(0.0, 0.0, 0.0));
 		transformacion = glm::scale(transformacion, glm::vec3(0.125, 0.125, 0.125));
-		transformacion = glm::rotate(transformacion, theTime, glm::vec3(0.0, 0.5, 0.0));
+		transformacion = glm::rotate(transformacion, theTime, glm::vec3(0.0, 0.5, cosTime));
 		programa_shaders.setMat4("transformacion", transformacion);
-		if (modelo.tipo != "3DC" && modelo.tipo != "3DT") {
-			programa_shaders.setVec3("colores", glm::vec3(0.1, 0.2, 0.3));
+		if (modelo.tipo == "2D" || modelo.tipo == "3D") {
+			programa_shaders.setVec3("colores", glm::vec3(-sinTime, sinTime+0.5, -sinTime));
 		}
 		
 		glBindVertexArray(id_array_vertices);
