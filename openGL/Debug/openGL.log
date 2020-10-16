@@ -1,8 +1,0 @@
-﻿  main.cpp
-C:\Users\renxzen\source\repos\openGL\openGL\fileReader.h(110,2): warning C4091: 'typedef ': ignored on left of 'Superficie' when no variable is declared
-C:\Users\renxzen\source\repos\openGL\openGL\fileReader.h(146,25): warning C4244: '=': conversion from 'float' to 'GLuint', possible loss of data
-C:\Users\renxzen\source\repos\openGL\openGL\fileReader.h(147,29): warning C4244: '=': conversion from 'float' to 'GLuint', possible loss of data
-C:\Users\renxzen\source\repos\openGL\openGL\fileReader.h(148,29): warning C4244: '=': conversion from 'float' to 'GLuint', possible loss of data
-C:\Users\renxzen\source\repos\openGL\openGL\main.cpp(98,55): warning C4305: 'initializing': truncation from 'double' to 'float'
-C:\Users\renxzen\source\repos\openGL\openGL\main.cpp(98,77): warning C4305: 'initializing': truncation from 'double' to 'float'
-  openGL.vcxproj -> C:\Users\renxzen\source\repos\openGL\Debug\openGL.exe
